@@ -1,1 +1,159 @@
-Project Documentation: Mumbai Crime Area DetectorExecutive SummaryThe Mumbai Crime Area Detector is an enterprise-grade, browser-based analytics platform designed to centralize and visualize ward-level crime data across all 24 Brihanmumbai Municipal Corporation (BMC) wards. By aggregating multi-year statistical trends and mapping spatial distributions, the platform provides actionable insights for citizens, researchers, urban planners, and policy analysts. The application is entirely client-side, requiring no local installation or database configuration for immediate deployment.Core System FeaturesInteractive Spatial Mapping: Utilizes color-coded bubble mapping to visualize safety scores and absolute crime volumes across all 24 wards, featuring granular drill-down capabilities via geographical marker selection.Granular Ward Analytics: Features a dedicated detail panel rendering dynamic safety scores (on a calibrated 0–100 scale), percentage-based crime breakdown charts, mini-trend sparklines, and predictive metrics.Statistical Forecasting: Generates 2025 crime projections using ordinary least squares (OLS) linear regression, incorporating 95% confidence intervals displayed as readable upper and lower bounds.Crime Density Heatmap: Displays a 24-ward by 10-crime-type cross-tabulation matrix designed for immediate hotspot identification and macro-level pattern analysis.Safety Leaderboards: Evaluates and ranks municipal zones to present a comprehensive safest-to-riskiest ward leaderboard juxtaposed against a synchronized city-wide average gauge.Macro City Overview: Renders high-level administrative insights including zone-wise distribution metrics, crime-type donut charts, and year-over-year operational trend lines.Multi-Modal Navigation: Ensures seamless UX orchestration by allowing synchronized ward selection via map interactions, drop-down search queries, or high-level KPI cards.Technical Stack ArchitectureThe application is engineered using a decoupled, lightweight data science stack optimized for high-performance rendering in browser environments.Framework LayerTechnology ComponentVersion SpecificationFunctional ResponsibilityUI FrameworkStreamlit$\ge$ 1.31.0Application lifecycle, reactive layout orchestration, and web server rendering.Data VisualizationPlotly5.18.0Vector-based interactive charts, donut graphs, and time-series trend lines.Data Engineeringpandas$\ge$ 2.0.0High-performance dataframe manipulation, slicing, and cross-tabulation.Numerical ProcessingNumPy$\ge$ 1.24.0Vectorized mathematical operations and array transformations.Statistical ModelingOLS Linear Regressionnumpy.polyfitPolynomial curve fitting for historical trend estimation and 2025 forecasts.Geospatial MappingPlotly go.ScattermapboxCarto PositronNon-tokenized tile rendering for latitude/longitude coordinate plotting.Deployment TargetStreamlit CloudManaged PlatformContinuous integration and cloud hosting directly from version control.Mathematical Methodology: 2025 Predictive ModelingFor each municipal ward, the application fits a first-order Ordinary Least Squares (OLS) linear regression model against five historical annual data points (2020–2024).To accurately communicate statistical uncertainty to non-technical stakeholders, the platform calculates the full prediction standard error ($SE_{\text{pred}}$) for the forecast year ($x_* = 2025$) using the variance formula:$$SE_{\text{pred}} = SE_{\text{residual}} \times \sqrt{1 + \frac{1}{n} + \frac{(x_* - \bar{x})^2}{\sum_{i=1}^{n} (x_i - \bar{x})^2}}$$Where:$SE_{\text{residual}}$ represents the residual standard error of the fitted regression line.$n$ denotes the sample size of the historical cohort ($n = 5$).$\bar{x}$ represents the sample mean of the historical years ($2022.0$).$x_i$ represents the discrete historical observation years ($2020, 2021, \dots, 2024$).$x_*$ represents the target projection target year ($2025$).The resulting standard error is multiplied by a critical value ($t \approx 2$) to establish a robust 95% confidence interval. This mathematical range is exposed on the user interface as a simplified lower-bound to upper-bound metric, prioritizing scannability over abstract statistical syntax.Administrative Boundary and Categorical CoverageMunicipal Wards by Policing JurisdictionThe platform aligns the 24 municipal wards of Mumbai into 7 distinct administrative policing zones to reflect localized law enforcement structures:Policing ZoneAssociated Administrative WardsPrimary Geographical Anchors CoveredZone I – SouthA, B, DColaba, Mazgaon, Malabar HillZone II – CentralC, E, F/N, F/S, G/N, G/SParel, Sion, Dadar, WorliZone III – Western SuburbsH/E, H/WBandra East, Bandra West, SantacruzZone IV – W Suburbs NorthK/E, K/W, P/N, P/SAndheri East, Andheri West, Goregaon, MaladZone V – Eastern SuburbsL, M/E, M/W, NKurla, Chembur, Mankhurd, GhatkoparZone VI – NorthR/C, R/N, R/SBorivali, Dahisar, KandivaliZone VII – North EastS, TBhandup, MulundMonitored Crime Classification MatrixThe data model processes telemetry across 10 distinct penal classifications, capturing both property and violent crime categories:Property Crimes: Theft, Vehicle Theft, Robbery, BurglaryPersonal Crimes: Assault, Murder, KidnappingWhite Collar & Cyber: FraudSpecial Enactments: Drug OffencesPublic Safety: Eve TeasingDeployment & Execution GuideLocal Installation & Environment SetupEnsure you have Python $\ge$ 3.9 installed on your local workstation before executing the following setup pipeline:
+# Mumbai Crime Area Detector
+
+A browser-based analytics dashboard providing ward-level crime intelligence across all 24 Brihanmumbai Municipal Corporation (BMC) wards. The application covers 10 crime categories spanning 2020–2024 and produces data-driven 2025 projections using linear regression. No installation is required — the dashboard runs entirely in a web browser.
+
+---
+
+## Table of Contents
+
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+- [Project Structure](#project-structure)
+- [Wards Covered](#wards-covered)
+- [Crime Categories](#crime-categories)
+- [Forecast Methodology](#forecast-methodology)
+- [Roadmap](#roadmap)
+- [Disclaimer](#disclaimer)
+- [License](#license)
+- [Acknowledgements](#acknowledgements)
+
+---
+
+## Features
+
+- **Interactive Bubble Map** — Colour-coded safety scores and crime volume visualised across all 24 wards; click any marker to open a detailed ward profile.
+- **Ward Detail Panel** — Displays a safety score (0–100), per-crime-type breakdown with percentage bars, a mini trend sparkline, and a 2025 forecast range.
+- **2025 Predictions** — Ordinary Least Squares linear regression with 95% confidence intervals presented as a readable low–high range.
+- **Crime Heatmap** — A 24-ward × 10-crime-type matrix that instantly surfaces geographic and categorical hotspots.
+- **Safety Rankings** — A full ward leaderboard from safest to riskiest, accompanied by a city-average gauge.
+- **City Overview** — Zone-wise crime distribution, a crime-type donut chart, and year-over-year trend lines for the full city.
+- **Multi-Entry Selection** — Ward selection via map click, dropdown search, or the KPI card Explore button.
+
+---
+
+## Tech Stack
+
+| Layer | Tool |
+|---|---|
+| Framework | Streamlit >= 1.31 |
+| Visualisation | Plotly 5.18 |
+| Data Processing | pandas, NumPy |
+| Forecasting | OLS Linear Regression (numpy.polyfit) |
+| Map | Plotly go.Scattermapbox + Carto Positron |
+| Deployment | Streamlit Cloud |
+
+---
+
+## Getting Started
+
+### Run Locally
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/YOUR_USERNAME/mumbai-crime-detector.git
+cd mumbai-crime-detector
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Launch the application
+streamlit run app.py
+```
+
+Open `http://localhost:8501` in your browser.
+
+### Requirements
+
+```
+streamlit>=1.31.0
+pandas>=2.0.0
+numpy>=1.24.0
+plotly==5.18.0
+```
+
+### Deploy on Streamlit Cloud
+
+1. Push the repository to GitHub.
+2. Go to [share.streamlit.io](https://share.streamlit.io) and sign in with GitHub.
+3. Click **New app**, select your repository, and set the main file to `app.py`.
+4. Click **Deploy** — a public URL will be ready within approximately two minutes.
+
+---
+
+## Project Structure
+
+```
+mumbai-crime-detector/
+│
+├── app.py            # Main application — all logic, charts, and UI
+├── requirements.txt  # Python dependencies
+└── README.md         # This file
+```
+
+---
+
+## Wards Covered
+
+The dashboard covers all 24 BMC municipal wards across seven policing zones.
+
+| Zone | Wards |
+|---|---|
+| Zone I — South | A (Colaba), B (Mazgaon), D (Malabar Hill) |
+| Zone II — Central | C, E, F/N, F/S, G/N, G/S |
+| Zone III — Western Suburbs | H/E, H/W (Bandra) |
+| Zone IV — Western Suburbs North | K/E, K/W (Andheri), P/N, P/S (Goregaon) |
+| Zone V — Eastern Suburbs | L (Kurla), M/E, M/W, N (Ghatkopar) |
+| Zone VI — North | R/C, R/N, R/S (Borivali) |
+| Zone VII — North East | S (Bhandup), T (Mulund) |
+
+---
+
+## Crime Categories
+
+Theft, Vehicle Theft, Robbery, Burglary, Assault, Murder, Kidnapping, Fraud, Drug Offences, Eve Teasing
+
+---
+
+## Forecast Methodology
+
+For each ward, the application fits an Ordinary Least Squares linear regression on five annual data points (2020–2024) using `numpy.polyfit`. The full prediction standard error is computed as follows:
+
+```
+SE_pred = SE_residual × sqrt(1 + 1/n + (2025 − mean_year)² / Σ(year − mean_year)²)
+```
+
+Multiplying by 2 yields an approximate 95% confidence interval, displayed as a plain low–high range for readability.
+
+---
+
+## Roadmap
+
+- Live data integration with the Mumbai Police Open Data API and NCRB feeds
+- SARIMA and Prophet models to capture seasonal crime patterns
+- PostgreSQL backend for large-scale historical data storage
+- Mobile-optimised responsive layout
+- Hindi and Marathi language localisation
+- One-click PDF ward report export
+- Authentication layer for law enforcement internal use
+
+---
+
+## Disclaimer
+
+The crime data used in this application is synthetically generated using Poisson distributions calibrated against publicly available ward-level patterns. It is intended for educational and demonstration purposes only and does not represent official Mumbai Police or government statistics. No inferences about real crime rates or individual ward safety should be drawn from this data.
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE). You are free to use, modify, and distribute it in accordance with the licence terms.
+
+---
+
+## Acknowledgements
+
+- [Streamlit](https://streamlit.io) — for the rapid application framework
+- [Plotly](https://plotly.com) — for interactive charts and map rendering
+- [Carto](https://carto.com) — for the Positron basemap tiles (no API key required)
+- Mumbai Police and BMC — for publicly available ward boundary and zoning reference data
